@@ -32,10 +32,33 @@ class ArraySubsetAssertionTest extends TestCase
         yield 'simple match' => [['foo' => 'bar'], ['foo' => 'bar', 'bar' => 'foo']];
         yield 'even unordered keys is a subset' => [['bar' => 'foo', 'foo' => 'bar'], ['foo' => 'bar', 'bar' => 'foo']];
         yield 'subset can be a list' => [[1, 2], [1, 2, 3]];
-        yield 'subset can be a deep list' => [[['foo' => 0], ['bar' => 1]], [['foo' => 0, 'bar' => 0], ['foo' => 1, 'bar' => 1], ['foo' => 2, 'bar' => 2]]];
+        yield 'subset can be a list with different order' => [[3, 1], [1, 2, 3]];
+        yield 'subset can be a deep list 1' => [
+            [['foo' => 0], ['bar' => 2]],
+            [['foo' => 0, 'bar' => 0], ['foo' => 1, 'bar' => 1], ['foo' => 2, 'bar' => 2]],
+        ];
+        yield 'subset can be a deep list 2' => [
+            [1, ['b', 'c'], 4],
+            [1, ['a', 'b', 'c'], 3, 4],
+        ];
         yield 'deep match' => [
-            ['foo' => ['foo2' => ['foo3' => 'bar', 'list' => [1]]]],
+            ['foo' => ['foo2' => ['foo3' => 'bar', 'list' => [2]]]],
             ['foo' => ['foo2' => ['foo3' => 'bar', 'bar' => 'bar', 'list' => [1, 2, 3]], 'bar' => 'bar'], 'bar' => 'foo'],
+        ];
+        yield 'deep match with lists' => [
+            [
+                'users' => [
+                    ['name' => 'name1', 'age' => 25, 'friends' => ['name3']],
+                    ['name' => 'name3'],
+                ],
+            ],
+            [
+                'users' => [
+                    ['name' => 'name1', 'age' => 25, 'friends' => ['name2', 'name3']],
+                    ['name' => 'name2', 'age' => 26],
+                    ['name' => 'name3', 'age' => 27, 'friends' => ['name1', 'name2']],
+                ],
+            ],
         ];
         yield 'works with ArrayObject' => [
             new \ArrayObject(['foo' => 'bar']),
@@ -65,7 +88,49 @@ class ArraySubsetAssertionTest extends TestCase
         yield 'different key does not match' => [['not foo' => 'bar'], ['foo' => 'bar']];
         yield 'different value does not match' => [['foo' => 'not bar'], ['foo' => 'bar']];
         yield 'match is strict' => [['foo' => '0'], ['foo' => 0]];
-        yield 'order in list is important' => [[3, 2, 1], [1, 2, 3]];
+
+        $deepArrayWithLists = [
+            'users' => [
+                ['name' => 'name1', 'age' => 25, 'friends' => ['name2', 'name3']],
+                ['name' => 'name2', 'age' => 26],
+                ['name' => 'name3', 'age' => 27],
+            ],
+        ];
+
+        yield 'deep match with lists 1' => [
+            ['users' => [['name' => 'foo']]],
+            $deepArrayWithLists,
+        ];
+
+        yield 'deep match with lists 2' => [
+            ['users' => [['foo' => 'name1']]],
+            $deepArrayWithLists,
+        ];
+
+        yield 'deep match with lists 3' => [
+            ['users' => [['name' => 'name1', 'foo' => 'bar']]],
+            $deepArrayWithLists,
+        ];
+
+        yield 'deep match with lists 4' => [
+            ['users' => [['name' => 'name1', 'age' => 0]]],
+            $deepArrayWithLists,
+        ];
+
+        yield 'deep match with lists 5' => [
+            ['users' => [['name' => 'name1', 'age' => 25, 'friends' => ['name1']]]],
+            $deepArrayWithLists,
+        ];
+
+        yield 'deep match with lists 6' => [
+            ['users' => [['name' => 'name1', 'age' => 25, 'friends' => 'name1']]],
+            $deepArrayWithLists,
+        ];
+
+        yield 'deep match with lists 7' => [
+            ['users' => [['name' => 'name1'], ['name' => 'foo']]],
+            $deepArrayWithLists,
+        ];
     }
 
     /** @test */
